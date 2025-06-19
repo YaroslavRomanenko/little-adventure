@@ -1,33 +1,19 @@
-# LittleAdventure
+## Licensing
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+This project uses a **split licensing** model. Different parts of the project are available under different terms. Please read the following sections carefully.
 
-This project was generated with a template including simple application launchers and a main class extending `Game` that sets the first screen.
+### Source Code
 
-## Platforms
+All source code (e.g., files with `.java` extensions) is licensed under the **GNU General Public License v3.0 (GPLv3)**.
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
+This means you are free to use, study, modify, and distribute the code, provided that any derivative work you distribute is also licensed under the same GPLv3 terms. In short: if you use this code, you must share your code.
 
-## Gradle
+**See the full license text in the [LICENSE](LICENSE) file.**
 
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
+### Assets
 
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
+All assets—including images, sounds, 3D models, and other media files, primarily located in the `/assets/` directory—are **All Rights Reserved**.
 
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
+They are proprietary and are **not** covered by the GPLv3 license. You may **not** copy, modify, distribute, or use these assets in any way without obtaining express written permission from the copyright holder.
+
+**See the terms for assets in the [LICENSE-ASSETS](LICENSE-ASSETS) file.**

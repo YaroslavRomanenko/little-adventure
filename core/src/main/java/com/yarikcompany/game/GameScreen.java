@@ -19,6 +19,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.yarikcompany.game.entities.Archer;
+import com.yarikcompany.game.entities.EntityDirection;
+import com.yarikcompany.game.entities.EntityFactory;
 
 import java.awt.*;
 
@@ -31,28 +33,31 @@ public class GameScreen implements Screen {
     private OrthogonalTiledMapRenderer renderer;
     private ExtendViewport viewport;
 
+    private EntityFactory entityFactory;
     private Archer archer;
+
     private SpriteBatch batch;
 
     public GameScreen(LittleAdventure game) {
         this.game = game;
 
-        map = new TmxMapLoader().load("maps/Level_0.tmx");
-        renderer = new OrthogonalTiledMapRenderer(map, 1f / PPM);
+        this.map = new TmxMapLoader().load("maps/Level_0.tmx");
+        this.renderer = new OrthogonalTiledMapRenderer(map, 1f / PPM);
 
         OrthographicCamera camera = new OrthographicCamera();
         camera.update();
 
-        viewport = new ExtendViewport(8f, 8f, camera);
+        this.viewport = new ExtendViewport(8f, 8f, camera);
 
-
-        archer = new Archer();
-        batch = new SpriteBatch();
+        this.batch = new SpriteBatch();
     }
 
     @Override
     public void show() {
+        System.out.println("GameScreen is shown. Getting assets from manager...");
+        this.entityFactory = new EntityFactory(game.assetManager);
 
+        this.archer = entityFactory.createArcher();
     }
 
     @Override
@@ -67,21 +72,27 @@ public class GameScreen implements Screen {
         float delta = Gdx.graphics.getDeltaTime();
         Sprite archerSprite = archer.getSprite();
 
+        EntityDirection newDirection = EntityDirection.NONE;
+
         if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {
             archerSprite.translateY(speed * delta);
-            archer.setSprite(archer.getTextureUp());
+            newDirection = EntityDirection.UP;
 
         } else if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
             archerSprite.translateY(-speed * delta);
-            archer.setSprite(archer.getTextureDown());
+            newDirection = EntityDirection.DOWN;
 
         } else if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             archerSprite.translateX(speed * delta);
-            archer.setSprite(archer.getTextureRight());
+            newDirection = EntityDirection.RIGHT;
 
         } else if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             archerSprite.translateX(-speed * delta);
-            archer.setSprite(archer.getTextureLeft());
+            newDirection = EntityDirection.LEFT;
+        }
+
+        if (newDirection != archer.getCurrentDirection()) {
+            archer.changeDirection(newDirection);
         }
     }
 
@@ -102,10 +113,12 @@ public class GameScreen implements Screen {
         Sprite archerSprite = archer.getSprite();
 
         ScreenUtils.clear(Color.BLACK);
+
         viewport.getCamera().update();
         renderer.setView((OrthographicCamera) viewport.getCamera());
         renderer.render();
         viewport.getCamera().position.set(archerSprite.getX(), archerSprite.getY(), 0);
+
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
 

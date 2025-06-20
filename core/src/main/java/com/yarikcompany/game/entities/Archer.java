@@ -2,38 +2,58 @@ package com.yarikcompany.game.entities;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.yarikcompany.game.entities.EntityDirection.*;
 
-public class Archer {
-    private Texture archerUpTexture;
-    private Texture archerDownTexture;
-    private Texture archerRightTexture;
-    private Texture archerLeftTexture;
+public class Archer extends Entity {
+    private Texture textureUP;
+    private Texture textureDown;
+    private Texture textureRight;
+    private Texture textureLeft;
 
-    private Sprite archerSprite;
 
-    public Archer() {
-        archerUpTexture = new Texture("characters/archer/up.png");
-        archerDownTexture = new Texture("characters/archer/down.png");
-        archerRightTexture = new Texture("characters/archer/right.png");
-        archerLeftTexture = new Texture("characters/archer/left.png");
+    public Archer(Texture up, Texture down, Texture left, Texture right) {
+        super(new Sprite(down), EntityDirection.DOWN);
 
-        archerSprite = new Sprite(archerDownTexture);
-        archerSprite.setSize(1,1);
-        archerSprite.setPosition(10,10);
+        this.textureUP = up;
+        this.textureDown = down;
+        this.textureLeft = left;
+        this.textureRight = right;
+
+        entitySprite = new Sprite(textureDown);
+        entitySprite.setSize(1,1);
+        entitySprite.setPosition(10,10);
     }
 
-    public Texture getTextureUp() { return archerUpTexture; }
-    public Texture getTextureDown() { return archerDownTexture; }
-    public Texture getTextureRight() { return archerRightTexture; }
-    public Texture getTextureLeft() { return archerLeftTexture; }
-
-    public Sprite getSprite() { return archerSprite; }
-
-    public void setSprite(Texture texture) { archerSprite.setTexture(texture); }
+    @Override
+    public void changeDirection(EntityDirection newDirection) {
+        this.setCurrentDirection(newDirection);
+        switch (newDirection) {
+            case UP:
+                this.setSprite(this.getTextureUp());
+                break;
+            case DOWN:
+                this.setSprite(this.getTextureDown());
+                break;
+            case LEFT:
+                this.setSprite(this.getTextureLeft());
+                break;
+            case RIGHT:
+                this.setSprite(this.getTextureRight());
+                break;
+            case NONE:
+                break;
+        }
+    }
 
     public void dispose() {
-        archerDownTexture.dispose();
-        archerRightTexture.dispose();
-        archerUpTexture.dispose();
+        textureUP.dispose();
+        textureDown.dispose();
+        textureRight.dispose();
+        textureLeft.dispose();
     }
+
+    public Texture getTextureUp() { return textureUP; }
+    public Texture getTextureDown() { return textureDown; }
+    public Texture getTextureRight() { return textureRight; }
+    public Texture getTextureLeft() { return textureLeft; }
 }

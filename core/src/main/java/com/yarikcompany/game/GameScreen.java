@@ -9,23 +9,27 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.yarikcompany.game.entities.Archer;
 
 import java.awt.*;
 
 public class GameScreen implements Screen {
+    public static final float PPM = 16f;
+
     private final LittleAdventure game;
 
     private TiledMap map;
     private OrthogonalTiledMapRenderer renderer;
-    FitViewport viewport;
+    private ExtendViewport viewport;
 
     private Archer archer;
     private SpriteBatch batch;
@@ -33,14 +37,14 @@ public class GameScreen implements Screen {
     public GameScreen(LittleAdventure game) {
         this.game = game;
 
+        map = new TmxMapLoader().load("maps/Level_0.tmx");
+        renderer = new OrthogonalTiledMapRenderer(map, 1f / PPM);
+
         OrthographicCamera camera = new OrthographicCamera();
-        camera.setToOrtho(false, 256, 256);
         camera.update();
 
-        viewport = new FitViewport(256, 256, camera);
+        viewport = new ExtendViewport(8f, 8f, camera);
 
-        map = new TmxMapLoader().load("maps/Level_0.tmx");
-        renderer = new OrthogonalTiledMapRenderer(map);
 
         archer = new Archer();
         batch = new SpriteBatch();
@@ -65,7 +69,6 @@ public class GameScreen implements Screen {
 
         if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {
             archerSprite.translateY(speed * delta);
-            // viewport.getCamera().translate(0, speed * delta, 0);
             archer.setSprite(archer.getTextureUp());
 
         } else if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
@@ -102,6 +105,8 @@ public class GameScreen implements Screen {
         viewport.getCamera().update();
         renderer.setView((OrthographicCamera) viewport.getCamera());
         renderer.render();
+        viewport.getCamera().position.set(archerSprite.getX(), archerSprite.getY(), 0);
+        batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
 
         archerSprite.draw(batch);
@@ -111,7 +116,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height, true);
+        viewport.update(width, height);
     }
 
     @Override

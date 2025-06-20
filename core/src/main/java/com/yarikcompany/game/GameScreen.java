@@ -96,11 +96,45 @@ public class GameScreen implements Screen {
             velocity.nor();
 
             float moveX = velocity.x * speed * delta;
+
+            if (isMoveValid(archerSprite.getX() + moveX, archerSprite.getY())) {
+                archerSprite.translateX(moveX);
+            }
+
             float moveY = velocity.y * speed * delta;
 
-            archerSprite.translate(moveX, moveY);
+            if (isMoveValid(archerSprite.getX(), archerSprite.getY() + moveY)) {
+                archerSprite.translateY(moveY);
+            }
         }
 
+        archer.getHitbox().setPosition(archerSprite.getX(), archerSprite.getY());
+    }
+
+    private boolean isMoveValid(float nextX, float nextY) {
+        float mapWidth = map.getProperties().get("width", Integer.class);
+        float mapHeight = map.getProperties().get("height", Integer.class);
+
+        float archerWidth = archer.getHitbox().width;
+        float archerHeight = archer.getHitbox().height;
+
+        if (nextX < 0) {
+            return false;
+        }
+
+        if (nextX + archerWidth > mapWidth) {
+            return false;
+        }
+
+        if (nextY < 0) {
+            return false;
+        }
+
+        if (nextY + archerHeight > mapHeight) {
+            return false;
+        }
+
+        return true;
     }
 
     private void logic() {

@@ -15,6 +15,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -70,32 +71,36 @@ public class GameScreen implements Screen {
     }
 
     private void input() {
-        float speed = 2f;
+        float speed = 2.5f;
         float delta = Gdx.graphics.getDeltaTime();
         Sprite archerSprite = archer.getSprite();
 
+        Vector2 velocity = new Vector2(0, 0);
         EntityDirection newDirection = EntityDirection.NONE;
 
-        if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            archerSprite.translateY(speed * delta);
-            newDirection = EntityDirection.UP;
+        if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) { newDirection = EntityDirection.UP; }
+        if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) { newDirection = EntityDirection.DOWN; }
+        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) { newDirection = EntityDirection.LEFT; }
+        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) { newDirection = EntityDirection.RIGHT; }
 
-        } else if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            archerSprite.translateY(-speed * delta);
-            newDirection = EntityDirection.DOWN;
-
-        } else if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            archerSprite.translateX(speed * delta);
-            newDirection = EntityDirection.RIGHT;
-
-        } else if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            archerSprite.translateX(-speed * delta);
-            newDirection = EntityDirection.LEFT;
-        }
+        if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) { velocity.y = 1; }
+        if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) { velocity.y = -1; }
+        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) { velocity.x = -1; }
+        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) { velocity.x = 1; }
 
         if (newDirection != archer.getCurrentDirection()) {
             archer.changeDirection(newDirection);
         }
+
+        if (velocity.len2() > 0) {
+            velocity.nor();
+
+            float moveX = velocity.x * speed * delta;
+            float moveY = velocity.y * speed * delta;
+
+            archerSprite.translate(moveX, moveY);
+        }
+
     }
 
     private void logic() {

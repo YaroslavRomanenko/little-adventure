@@ -41,9 +41,6 @@ public class GameScreen implements Screen {
     public GameScreen(LittleAdventure game) {
         this.game = game;
 
-        this.map = new TmxMapLoader().load("maps/Level_0.tmx");
-        this.renderer = new OrthogonalTiledMapRenderer(map, 1f / PPM);
-
         OrthographicCamera camera = new OrthographicCamera();
         camera.update();
 
@@ -55,6 +52,11 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         System.out.println("GameScreen is shown. Getting assets from manager...");
+        this.map = game.assetManager.get(GameAssets.SPAWN_MAP);
+
+        float unitScale = 1f / PPM;
+        this.renderer = new OrthogonalTiledMapRenderer(this.map, unitScale);
+
         this.entityFactory = new EntityFactory(game.assetManager);
 
         this.archer = entityFactory.createArcher();
@@ -153,9 +155,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        map.dispose();
         renderer.dispose();
-        archer.dispose();
         batch.dispose();
     }
 }

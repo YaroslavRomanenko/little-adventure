@@ -45,13 +45,6 @@ public class Archer extends Entity {
         }
     }
 
-    public void dispose() {
-        textureUP.dispose();
-        textureDown.dispose();
-        textureRight.dispose();
-        textureLeft.dispose();
-    }
-
     public Texture getTextureUp() { return textureUP; }
     public Texture getTextureDown() { return textureDown; }
     public Texture getTextureRight() { return textureRight; }

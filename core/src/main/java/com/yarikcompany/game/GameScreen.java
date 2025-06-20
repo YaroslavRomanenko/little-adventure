@@ -112,12 +112,16 @@ public class GameScreen implements Screen {
     private void draw() {
         Sprite archerSprite = archer.getSprite();
 
-        ScreenUtils.clear(Color.BLACK);
+        float archerCenterX = archerSprite.getX() + archerSprite.getWidth() / 2;
+        float archerCenterY = archerSprite.getY() + archerSprite.getHeight() / 2;
+
+        viewport.getCamera().position.set(archerCenterX, archerCenterY, 0);
 
         viewport.getCamera().update();
+        ScreenUtils.clear(Color.BLACK);
+
         renderer.setView((OrthographicCamera) viewport.getCamera());
         renderer.render();
-        viewport.getCamera().position.set(archerSprite.getX(), archerSprite.getY(), 0);
 
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();

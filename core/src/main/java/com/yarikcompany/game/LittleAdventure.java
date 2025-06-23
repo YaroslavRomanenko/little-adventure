@@ -2,9 +2,11 @@ package com.yarikcompany.game;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.TextureAtlasLoader;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -15,7 +17,10 @@ public class LittleAdventure extends Game {
     @Override
     public void create() {
         assetManager = new AssetManager();
-        assetManager.setLoader(TiledMap.class, new TmxMapLoader(new InternalFileHandleResolver()));
+
+        InternalFileHandleResolver resolver = new InternalFileHandleResolver();
+
+        assetManager.setLoader(TiledMap.class, new TmxMapLoader(resolver));
 
         this.setScreen(new LoadingScreen(this));
     }

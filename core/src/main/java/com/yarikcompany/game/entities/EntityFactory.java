@@ -2,6 +2,9 @@ package com.yarikcompany.game.entities;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.yarikcompany.game.GameAssets;
 
 public class EntityFactory {
@@ -12,11 +15,8 @@ public class EntityFactory {
     }
 
     public Archer createArcher() {
-        Texture up = assetManager.get(GameAssets.ARCHER_UP);
-        Texture down = assetManager.get(GameAssets.ARCHER_DOWN);
-        Texture left = assetManager.get(GameAssets.ARCHER_LEFT);
-        Texture right = assetManager.get(GameAssets.ARCHER_RIGHT);
+        TextureAtlas atlas = assetManager.get(GameAssets.ARCHER_ATLAS);
 
-        return new Archer(up, down, left, right);
+        return new Archer(atlas);
     }
 }

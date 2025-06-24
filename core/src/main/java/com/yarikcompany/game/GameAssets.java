@@ -19,7 +19,6 @@ public final class GameAssets {
     public static final AssetDescriptor<Texture> ARCHER_RIGHT = new AssetDescriptor<>(CHARACTERS_PATH + "archer/right.png", Texture.class);
 
     public static final AssetDescriptor<TextureAtlas> ARCHER_ATLAS = new AssetDescriptor<>(CHARACTERS_PATH + "archer/archer_animation.atlas", TextureAtlas.class);
-
     public static final AssetDescriptor<TiledMap> SPAWN_MAP = new AssetDescriptor<>(MAPS_PATH + "spawn.tmx", TiledMap.class);
 
     public static void load(AssetManager manager) {
@@ -27,9 +26,7 @@ public final class GameAssets {
         manager.load(ARCHER_DOWN);
         manager.load(ARCHER_LEFT);
         manager.load(ARCHER_RIGHT);
-
         manager.load(ARCHER_ATLAS);
-
         manager.load(SPAWN_MAP);
     }
 }

@@ -22,6 +22,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.yarikcompany.game.entities.Archer;
 import com.yarikcompany.game.entities.EntityDirection;
 import com.yarikcompany.game.entities.EntityFactory;
+import com.yarikcompany.game.utils.Interpolator;
 
 import java.awt.*;
 
@@ -42,6 +43,8 @@ public class GameScreen implements Screen {
 
     private SpriteBatch batch;
 
+    private Interpolator cameraInterpolator;
+
     public GameScreen(LittleAdventure game) {
         this.game = game;
 
@@ -59,6 +62,7 @@ public class GameScreen implements Screen {
          float spawnX = mapWidth / 2f - archer.getWidth() / 2f;
          float spawnY = mapHeight / 2f - archer.getHeight() / 2f;
         archer.setPosition(spawnX, spawnY);
+        cameraInterpolator = new Interpolator(new Vector2(spawnX,spawnY), 1.4f,1.0f,0.0f);
 
         this.batch = new SpriteBatch();
     }
@@ -77,6 +81,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
+        // add some logger, to just disable it in release
         System.out.println("GameScreen is shown. Getting assets from manager...");
     }
 
@@ -88,8 +93,10 @@ public class GameScreen implements Screen {
     }
 
     private void input() {
+        // this is logic not input processing
         float delta = Gdx.graphics.getDeltaTime();
         archer.update(delta, this);
+        cameraInterpolator.step(delta);
     }
 
     private void logic() {
@@ -108,14 +115,17 @@ public class GameScreen implements Screen {
     private void draw() {
         Sprite archerSprite = archer.getSprite();
 
+        //move to own function
         float archerCenterX = archerSprite.getX() + archerSprite.getWidth() / 2;
         float archerCenterY = archerSprite.getY() + archerSprite.getHeight() / 2;
-
-        viewport.getCamera().position.set(archerCenterX, archerCenterY, 0);
+        viewport.getCamera().position.set(cameraInterpolator.getInterpolatedValue().x,
+            cameraInterpolator.getInterpolatedValue().y , 0);
+        cameraInterpolator.setTarget(new Vector2(archerCenterX,archerCenterY));
 
         viewport.getCamera().update();
         ScreenUtils.clear(Color.BLACK);
 
+        //do you need to set view every iteration?
         renderer.setView((OrthographicCamera) viewport.getCamera());
         renderer.render();
 

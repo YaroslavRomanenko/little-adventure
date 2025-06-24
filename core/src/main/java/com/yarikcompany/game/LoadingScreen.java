@@ -7,7 +7,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 public class LoadingScreen extends ScreenAdapter {
     private final LittleAdventure game;
 
-    public LoadingScreen(final LittleAdventure game) {
+    public LoadingScreen(LittleAdventure game) {
         this.game = game;
     }
 

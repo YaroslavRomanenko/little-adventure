@@ -1,17 +1,20 @@
-package com.yarikcompany.game.entities;
+package com.yarikcompany.game.entities.player;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector;
 import com.badlogic.gdx.math.Vector2;
 import com.yarikcompany.game.GameScreen;
-import com.yarikcompany.game.entities.EntityDirection.*;
+import com.yarikcompany.game.Map;
+import com.yarikcompany.game.entities.Entity;
+import com.yarikcompany.game.entities.EntityDirection;
 
-public class Archer extends Entity {
-    private static final float ARCHER_WIDTH = 1f;
-    private static final float ARCHER_HEIGHT = 1.16f;
+public class Player extends Entity {
+    private static final float PLAYER_WIDTH = 1f;
+    private static final float PLAYER_HEIGHT = 1.16f;
     private static final float SPEED = 2.5f;
 
     private final Animation<TextureRegion> walkUpAnimation;
@@ -23,7 +26,7 @@ public class Archer extends Entity {
 
     private float stateTime = 0f;
 
-    public Archer(TextureAtlas atlas) {
+    public Player(TextureAtlas atlas) {
         super(createInitialSprite(atlas), EntityDirection.DOWN);
 
         float frameDuration = .1f;
@@ -47,7 +50,7 @@ public class Archer extends Entity {
         TextureRegion firstFrame = initialAnimation.getKeyFrame(0);
         Sprite initialSprite = new Sprite(firstFrame);
 
-        initialSprite.setSize(ARCHER_WIDTH, ARCHER_HEIGHT);
+        initialSprite.setSize(PLAYER_WIDTH, PLAYER_HEIGHT);
 
         return initialSprite;
     }
@@ -88,12 +91,12 @@ public class Archer extends Entity {
         Vector2 velocity = new Vector2(0, 0);
         EntityDirection newDirection = EntityDirection.NONE;
 
-        if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) { newDirection = EntityDirection.UP; }
+        //if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) { newDirection = EntityDirection.UP; }
         if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) { newDirection = EntityDirection.DOWN; }
         if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) { newDirection = EntityDirection.LEFT; }
         if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) { newDirection = EntityDirection.RIGHT; }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) { velocity.y = 1; }
+        //if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) { velocity.y = 1; }
         if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) { velocity.y = -1; }
         if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) { velocity.x = -1; }
         if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) { velocity.x = 1; }
@@ -108,24 +111,60 @@ public class Archer extends Entity {
             changeDirection(EntityDirection.NONE);
             stateTime = 0;
         }
+    }
+
+    public void moveUp() {
+        this.currentAnimation = walkUpAnimation;
+        Vector2 velocity = new Vector2(0, 0);
+        velocity.y = 1;
+
+        walk(velocity);
+    }
+
+    public void walk(Vector2 velocity) {
+        float delta = Gdx.graphics.getDeltaTime();
 
         if (velocity.len2() > 0) {
             velocity.nor();
 
             float moveX = velocity.x * SPEED * delta;
 
-            if (world.isMoveValid(entitySprite.getX() + moveX, entitySprite.getY())) {
+            if (isMoveValid(entitySprite.getX() + moveX, entitySprite.getY())) {
                 entitySprite.translateX(moveX);
             }
 
             float moveY = velocity.y * SPEED * delta;
 
-            if (world.isMoveValid(entitySprite.getX(), entitySprite.getY() + moveY)) {
+            if (isMoveValid(entitySprite.getX(), entitySprite.getY() + moveY)) {
                 entitySprite.translateY(moveY);
             }
         }
 
         updateHitboxPos();
+    }
+
+    public boolean isMoveValid(float nextX, float nextY) {
+
+        float archerRealWidth = getHitbox().getWidth();
+        float archerRealHeight = getHitbox().getHeight();
+
+        if (nextX < 0) {
+            return false;
+        }
+
+        if (nextX + archerRealWidth > Map.getMapWidth()) {
+            return false;
+        }
+
+        if (nextY < 0) {
+            return false;
+        }
+
+        if (nextY + archerRealHeight > Map.getMapHeight()) {
+            return false;
+        }
+
+        return true;
     }
 
     public Rectangle getHitbox() { return hitbox; }

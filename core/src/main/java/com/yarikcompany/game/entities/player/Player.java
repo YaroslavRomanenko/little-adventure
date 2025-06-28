@@ -58,6 +58,7 @@ public class Player extends Entity {
         this.currentAnimation = walkDownAnimation;
 
         this.hitbox = new Rectangle(getSprite().getX(), getSprite().getY(), getSprite().getWidth(), getSprite().getHeight());
+        setPosition(spawnX, spawnY);
     }
 
     private void initializeSpawnCords() {
@@ -65,8 +66,6 @@ public class Player extends Entity {
 
         spawnX = playerObject.getProperties().get("x", Float.class) / PPM;
         spawnY = playerObject.getProperties().get("y", Float.class) / PPM;
-
-        setPosition(spawnX, spawnY);
     }
 
     private static Sprite createInitialSprite(TextureAtlas atlas) {

@@ -17,6 +17,14 @@ public class Player extends Entity {
     private static final float PLAYER_HEIGHT = 1.16f;
     private static final float SPEED = 2.5f;
 
+    private float spawnX;
+    private float spawnY;
+
+    private boolean isMovingUp = false;
+    private boolean isMovingDown = false;
+    private boolean isMovingLeft = false;
+    private boolean isMovingRight = false;
+
     private final Animation<TextureRegion> walkUpAnimation;
     private final Animation<TextureRegion> walkDownAnimation;
     private final Animation<TextureRegion> walkLeftAnimation;
@@ -25,6 +33,8 @@ public class Player extends Entity {
     private Animation<TextureRegion> currentAnimation;
 
     private float stateTime = 0f;
+
+    private Vector2 velocity = new Vector2(0, 0);
 
     public Player(TextureAtlas atlas) {
         super(createInitialSprite(atlas), EntityDirection.DOWN);
@@ -39,6 +49,10 @@ public class Player extends Entity {
         this.currentAnimation = walkDownAnimation;
 
         this.hitbox = new Rectangle(getSprite().getX(), getSprite().getY(), getSprite().getWidth(), getSprite().getHeight());
+
+        this.spawnX = Map.getMapWidth() / 2f - getWidth() / 2f;
+        this.spawnY = Map.getMapHeight() / 2f - getHeight() / 2f;
+        setPosition(spawnX, spawnY);
     }
 
     private static Sprite createInitialSprite(TextureAtlas atlas) {
@@ -57,8 +71,9 @@ public class Player extends Entity {
 
     @Override
     public void changeDirection(EntityDirection newDirection) {
-        this.setCurrentDirection(newDirection);
-        switch (newDirection) {
+        this.direction = newDirection;
+
+        switch (direction) {
             case UP:
                 this.currentAnimation = this.walkUpAnimation;
                 break;
@@ -76,33 +91,25 @@ public class Player extends Entity {
         }
     }
 
-    public void draw(Batch batch) {
-        TextureRegion currentFrame = currentAnimation.getKeyFrame(stateTime, true);
-
-        batch.draw(currentFrame,
-            getSprite().getX(),
-            getSprite().getY(),
-            getSprite().getWidth(),
-            getSprite().getHeight()
-            );
-    }
-
-    public void update(float delta, GameScreen world) {
-        Vector2 velocity = new Vector2(0, 0);
+    public void update(float delta) {
+        velocity.set(0, 0);
         EntityDirection newDirection = EntityDirection.NONE;
 
-        //if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) { newDirection = EntityDirection.UP; }
-        if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) { newDirection = EntityDirection.DOWN; }
-        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) { newDirection = EntityDirection.LEFT; }
-        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) { newDirection = EntityDirection.RIGHT; }
-
-        //if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) { velocity.y = 1; }
-        if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) { velocity.y = -1; }
-        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) { velocity.x = -1; }
-        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) { velocity.x = 1; }
-
-        if (newDirection != direction) {
-            changeDirection(newDirection);
+        if (isMovingUp) {
+            velocity.y = 1;
+            newDirection = EntityDirection.UP;
+        }
+        if (isMovingDown) {
+            velocity.y = -1;
+            newDirection = EntityDirection.DOWN;
+        }
+        if (isMovingLeft) {
+            velocity.x = -1;
+            newDirection = EntityDirection.LEFT;
+        }
+        if (isMovingRight) {
+            velocity.x = 1;
+            newDirection = EntityDirection.RIGHT;
         }
 
         if (velocity.len2() > 0) {
@@ -111,18 +118,6 @@ public class Player extends Entity {
             changeDirection(EntityDirection.NONE);
             stateTime = 0;
         }
-    }
-
-    public void moveUp() {
-        this.currentAnimation = walkUpAnimation;
-        Vector2 velocity = new Vector2(0, 0);
-        velocity.y = 1;
-
-        walk(velocity);
-    }
-
-    public void walk(Vector2 velocity) {
-        float delta = Gdx.graphics.getDeltaTime();
 
         if (velocity.len2() > 0) {
             velocity.nor();
@@ -140,19 +135,19 @@ public class Player extends Entity {
             }
         }
 
+        changeDirection(newDirection);
         updateHitboxPos();
     }
 
     public boolean isMoveValid(float nextX, float nextY) {
-
-        float archerRealWidth = getHitbox().getWidth();
-        float archerRealHeight = getHitbox().getHeight();
+        float playerRealWidth = getHitbox().getWidth();
+        float playerRealHeight = getHitbox().getHeight();
 
         if (nextX < 0) {
             return false;
         }
 
-        if (nextX + archerRealWidth > Map.getMapWidth()) {
+        if (nextX + playerRealWidth > Map.getMapWidth()) {
             return false;
         }
 
@@ -160,12 +155,30 @@ public class Player extends Entity {
             return false;
         }
 
-        if (nextY + archerRealHeight > Map.getMapHeight()) {
+        if (nextY + playerRealHeight > Map.getMapHeight()) {
             return false;
         }
 
         return true;
     }
 
+    public void draw(Batch batch) {
+        TextureRegion currentFrame = currentAnimation.getKeyFrame(stateTime, true);
+
+        batch.draw(currentFrame,
+            getSprite().getX(),
+            getSprite().getY(),
+            getSprite().getWidth(),
+            getSprite().getHeight()
+        );
+    }
+
+    public float getSpawnX() { return spawnX; }
+    public float getSpawnY() { return spawnY; }
     public Rectangle getHitbox() { return hitbox; }
+
+    public void setIsMovingUp(boolean isMovingUp) { this.isMovingUp = isMovingUp; }
+    public void setIsMovingDown(boolean isMovingDown) { this.isMovingDown = isMovingDown; }
+    public void setIsMovingLeft(boolean isMovingLeft) { this.isMovingLeft = isMovingLeft; }
+    public void setIsMovingRight(boolean isMovingRight) { this.isMovingRight = isMovingRight; }
 }

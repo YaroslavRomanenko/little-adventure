@@ -16,6 +16,7 @@ import com.yarikcompany.game.entities.player.Player;
 import com.yarikcompany.game.entities.EntityFactory;
 import com.yarikcompany.game.entities.player.PlayerInputHandler;
 import com.yarikcompany.game.utils.Interpolator;
+import jdk.internal.net.http.common.Log;
 
 public class GameScreen implements Screen {
     private Map map;
@@ -39,12 +40,11 @@ public class GameScreen implements Screen {
         playerInputHandler = new PlayerInputHandler(player);
         Gdx.input.setInputProcessor(playerInputHandler);
 
-        float spawnX = Map.getMapWidth() / 2f - player.getWidth() / 2f;
-        float spawnY = Map.getMapHeight() / 2f - player.getHeight() / 2f;
-        player.setPosition(spawnX, spawnY);
-        cameraInterpolator = new Interpolator(new Vector2(spawnX,spawnY), 1.4f,1.0f,0.0f);
+        cameraInterpolator = new Interpolator(new Vector2(player.getSpawnX(), player.getSpawnY()), 1.4f,1.0f,0.0f);
 
         this.batch = new SpriteBatch();
+
+        Gdx.app.setLogLevel(Log.ALL);
     }
 
     private void initializeEntities() {
@@ -67,11 +67,9 @@ public class GameScreen implements Screen {
     }
 
     private void logic() {
-        Sprite playerSprite = player.getSprite();
-
         float delta = Gdx.graphics.getDeltaTime();
 
-        player.update(delta, this);
+        player.update(delta);
         cameraInterpolator.step(delta);
     }
 

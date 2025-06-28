@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector;
 import com.badlogic.gdx.math.Vector2;
@@ -11,6 +13,11 @@ import com.yarikcompany.game.GameScreen;
 import com.yarikcompany.game.Map;
 import com.yarikcompany.game.entities.Entity;
 import com.yarikcompany.game.entities.EntityDirection;
+
+import java.lang.Record;
+
+import static com.yarikcompany.game.Map.PPM;
+import static com.yarikcompany.game.Map.getEntity;
 
 public class Player extends Entity {
     private static final float PLAYER_WIDTH = 1f;
@@ -39,6 +46,8 @@ public class Player extends Entity {
     public Player(TextureAtlas atlas) {
         super(createInitialSprite(atlas), EntityDirection.DOWN);
 
+        initializeSpawnCords();
+
         float frameDuration = .1f;
 
         walkUpAnimation = new Animation<>(frameDuration, atlas.findRegions("up"), Animation.PlayMode.LOOP);
@@ -49,9 +58,14 @@ public class Player extends Entity {
         this.currentAnimation = walkDownAnimation;
 
         this.hitbox = new Rectangle(getSprite().getX(), getSprite().getY(), getSprite().getWidth(), getSprite().getHeight());
+    }
 
-        this.spawnX = Map.getMapWidth() / 2f - getWidth() / 2f;
-        this.spawnY = Map.getMapHeight() / 2f - getHeight() / 2f;
+    private void initializeSpawnCords() {
+        MapObject playerObject = Map.getEntity("Player");
+
+        spawnX = playerObject.getProperties().get("x", Float.class) / PPM;
+        spawnY = playerObject.getProperties().get("y", Float.class) / PPM;
+
         setPosition(spawnX, spawnY);
     }
 

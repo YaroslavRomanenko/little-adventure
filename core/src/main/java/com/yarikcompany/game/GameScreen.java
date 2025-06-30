@@ -1,45 +1,31 @@
 package com.yarikcompany.game;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.yarikcompany.game.entities.Archer;
-import com.yarikcompany.game.entities.EntityDirection;
+import com.yarikcompany.game.entities.player.Player;
 import com.yarikcompany.game.entities.EntityFactory;
+import com.yarikcompany.game.entities.player.PlayerInputHandler;
 import com.yarikcompany.game.utils.Interpolator;
-
-import java.awt.*;
+import jdk.internal.net.http.common.Log;
 
 public class GameScreen implements Screen {
-    public static final float PPM = 16f;
-
-    private final int mapWidth;
-    private final int mapHeight;
+    private Map map;
 
     private final LittleAdventure game;
 
-    private TiledMap map;
-    private OrthogonalTiledMapRenderer renderer;
-    private ExtendViewport viewport;
-
     private EntityFactory entityFactory;
-    private Archer archer;
+    private Player player;
+    private PlayerInputHandler playerInputHandler;
 
     private SpriteBatch batch;
 
@@ -47,42 +33,27 @@ public class GameScreen implements Screen {
 
     public GameScreen(LittleAdventure game) {
         this.game = game;
-
-        OrthographicCamera camera = new OrthographicCamera();
-        camera.update();
-
-        this.viewport = new ExtendViewport(8f, 8f, camera);
-
-        initializeMap();
-        mapWidth = map.getProperties().get("width", Integer.class);
-        mapHeight = map.getProperties().get("height", Integer.class);
+        map = new Map(game.assetManager);
 
         initializeEntities();
 
-         float spawnX = mapWidth / 2f - archer.getWidth() / 2f;
-         float spawnY = mapHeight / 2f - archer.getHeight() / 2f;
-        archer.setPosition(spawnX, spawnY);
-        cameraInterpolator = new Interpolator(new Vector2(spawnX,spawnY), 1.4f,1.0f,0.0f);
+        playerInputHandler = new PlayerInputHandler(player);
+        Gdx.input.setInputProcessor(playerInputHandler);
+
+        cameraInterpolator = new Interpolator(new Vector2(player.getSpawnX(), player.getSpawnY()), 1.4f,1.0f,0.0f);
 
         this.batch = new SpriteBatch();
-    }
 
-    private void initializeMap() {
-        this.map = game.assetManager.get(GameAssets.SPAWN_MAP);
-
-        float unitScale = 1f / PPM;
-        this.renderer = new OrthogonalTiledMapRenderer(this.map, unitScale);
+        Gdx.app.setLogLevel(Log.ALL);
     }
 
     private void initializeEntities() {
         this.entityFactory = new EntityFactory(game.assetManager);
-        this.archer = entityFactory.createArcher();
+        this.player = entityFactory.createPlayer();
     }
 
     @Override
     public void show() {
-        // add some logger, to just disable it in release
-        System.out.println("GameScreen is shown. Getting assets from manager...");
     }
 
     @Override
@@ -93,77 +64,43 @@ public class GameScreen implements Screen {
     }
 
     private void input() {
-        // this is logic not input processing
-        float delta = Gdx.graphics.getDeltaTime();
-        archer.update(delta, this);
-        cameraInterpolator.step(delta);
     }
 
     private void logic() {
-        Sprite archerSprite = archer.getSprite();
-
-        float worldWidth = viewport.getWorldWidth();
-        float worldHeight = viewport.getWorldHeight();
-        float archerWidth = archerSprite.getWidth();
-        float archerHeight = archerSprite.getHeight();
         float delta = Gdx.graphics.getDeltaTime();
 
-        // archerSprite.setX(MathUtils.clamp(archerSprite.getX(), 0, worldWidth - archerWidth));
-        // archerSprite.setY(MathUtils.clamp(archerSprite.getY(), 0, worldHeight - archerHeight));
+        player.update(delta);
+        cameraInterpolator.step(delta);
     }
 
     private void draw() {
-        Sprite archerSprite = archer.getSprite();
+        Sprite playerSprite = player.getSprite();
 
         //move to own function
-        float archerCenterX = archerSprite.getX() + archerSprite.getWidth() / 2;
-        float archerCenterY = archerSprite.getY() + archerSprite.getHeight() / 2;
-        viewport.getCamera().position.set(cameraInterpolator.getInterpolatedValue().x,
+        float playerCenterX = playerSprite.getX() + playerSprite.getWidth() / 2;
+        float playerCenterY = playerSprite.getY() + playerSprite.getHeight() / 2;
+        map.getViewport().getCamera().position.set(cameraInterpolator.getInterpolatedValue().x,
             cameraInterpolator.getInterpolatedValue().y , 0);
-        cameraInterpolator.setTarget(new Vector2(archerCenterX,archerCenterY));
+        cameraInterpolator.setTarget(new Vector2(playerCenterX,playerCenterY));
 
-        viewport.getCamera().update();
+        map.getViewport().getCamera().update();
         ScreenUtils.clear(Color.BLACK);
 
         //do you need to set view every iteration?
-        renderer.setView((OrthographicCamera) viewport.getCamera());
-        renderer.render();
+        map.getRenderer().setView((OrthographicCamera) map.getViewport().getCamera());
+        map.getRenderer().render();
 
-        batch.setProjectionMatrix(viewport.getCamera().combined);
+        batch.setProjectionMatrix(map.getViewport().getCamera().combined);
         batch.begin();
 
-        archer.draw(batch);
+        player.draw(batch);
 
         batch.end();
     }
 
-    public boolean isMoveValid(float nextX, float nextY) {
-
-        float archerWidth = archer.getHitbox().getWidth();
-        float archerHeight = archer.getHitbox().getHeight();
-
-        if (nextX < 0) {
-            return false;
-        }
-
-        if (nextX + archerWidth > mapWidth) {
-            return false;
-        }
-
-        if (nextY < 0) {
-            return false;
-        }
-
-        if (nextY + archerHeight > mapHeight) {
-            return false;
-        }
-
-        return true;
-    }
-
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height);
+        map.getViewport().update(width, height);
     }
 
     @Override
@@ -183,7 +120,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        renderer.dispose();
+        map.dispose();
         batch.dispose();
     }
 }

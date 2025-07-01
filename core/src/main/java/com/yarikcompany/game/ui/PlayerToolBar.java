@@ -13,7 +13,7 @@ import com.yarikcompany.game.GameAssets;
 import static com.yarikcompany.game.GameScreen.MIN_WINDOW_WIDTH;
 
 public class PlayerToolBar {
-    public final static int SLOTS_AMOUNT = 7;
+    public final static int SLOTS_AMOUNT = 6;
     public final static int SLOT_SIZE = 40;
     private final static float PADDING = 10f;
 
@@ -24,11 +24,13 @@ public class PlayerToolBar {
     private float toolBarWidth;
 
     private Texture slotIcon;
+    private Texture slotLeftHandIcon;
 
     private static ScreenViewport uiViewport;
 
     public PlayerToolBar(AssetManager assetManager) {
         this.slotIcon = assetManager.get(GameAssets.TOOL_BAR_SLOT);
+        this.slotLeftHandIcon = assetManager.get(GameAssets.TOOL_BAR_LEFT_HAND_SLOT);
 
         OrthographicCamera uiCamera = new OrthographicCamera();
         uiViewport = new ScreenViewport(uiCamera);
@@ -45,6 +47,9 @@ public class PlayerToolBar {
     }
 
     public void draw(Batch batch) {
+        float slotLeftHand = startX - 1 * (initialSlotSize + initialPadding);
+        batch.draw(slotLeftHandIcon, slotLeftHand - 40, startY, initialSlotSize, initialSlotSize);
+
         for (int i = 0; i < SLOTS_AMOUNT; i++) {
             float currentX = startX + i * (initialSlotSize + initialPadding);
             batch.draw(slotIcon, currentX, startY, initialSlotSize, initialSlotSize);

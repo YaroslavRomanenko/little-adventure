@@ -2,19 +2,27 @@ package com.yarikcompany.game;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.sun.org.apache.xpath.internal.operations.Or;
 
 public class Map {
     public static final float PPM = 16f;
+    public static final int TILE_PX_WIDTH = 16;
+    public static final int TILE_PX_HEIGHT = 16;
+    public static final int TILE_WIDTH = 1;
+    public static final int TILE_HEIGHT = 1;
 
     private TiledMap map;
     private OrthogonalTiledMapRenderer renderer;
-    private ExtendViewport viewport;
+    private static ExtendViewport viewport;
 
     private static MapLayers layers;
 
@@ -25,7 +33,7 @@ public class Map {
         OrthographicCamera camera = new OrthographicCamera();
         camera.update();
 
-        this.viewport = new ExtendViewport(8f, 8f, camera);
+        viewport = new ExtendViewport(8f, 8f, camera);
 
         this.map = assetManager.get(GameAssets.SPAWN_MAP);
 
@@ -41,6 +49,21 @@ public class Map {
     public static MapObject getEntity(String entityName) {
         MapLayer layer = layers.get("Entities");
         return layer.getObjects().get(entityName);
+    }
+
+    public static boolean isCellBLocked(int tileX, int tileY) {
+        TiledMapTileLayer collisionLayer = (TiledMapTileLayer)layers.get("Collisions");
+
+        TiledMapTileLayer.Cell cell = collisionLayer.getCell(tileX, tileY);
+        if (cell == null || cell.getTile() == null) {
+            return false;
+        }
+
+        return cell.getTile().getProperties().containsKey("collidable");
+    }
+
+    public static OrthographicCamera getCamera() {
+        return (OrthographicCamera) viewport.getCamera();
     }
 
     public void dispose() {

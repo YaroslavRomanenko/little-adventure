@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="10" nextobjectid="9">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="50" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="10" nextobjectid="12">
+ <editorsettings>
+  <export target="Tiled/spawn.tmx" format="tmx"/>
+ </editorsettings>
  <tileset firstgid="1" name="Ground" tilewidth="16" tileheight="16" tilecount="256" columns="16">
   <image source="../tilesets/TileSet.png" width="256" height="256"/>
   <tile id="240">
@@ -146,6 +149,16 @@
  </layer>
  <objectgroup id="7" name="Entities">
   <object id="1" name="Player" x="176" y="287" width="16" height="17"/>
+  <object id="10" name="Slime" x="240" y="224" width="16" height="16">
+   <properties>
+    <property name="type" value="slime"/>
+   </properties>
+  </object>
+  <object id="11" name="Slime" x="95.6667" y="208.667" width="16" height="16">
+   <properties>
+    <property name="type" value="slime"/>
+   </properties>
+  </object>
  </objectgroup>
  <layer id="6" name="Trees" width="50" height="30">
   <data encoding="csv">
@@ -182,6 +195,9 @@
 </data>
  </layer>
  <layer id="8" name="Collisions" width="50" height="30" visible="0">
+  <properties>
+   <property name="type" value="player"/>
+  </properties>
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,241,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,241,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

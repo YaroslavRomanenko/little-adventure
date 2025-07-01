@@ -2,7 +2,7 @@ package com.yarikcompany.game.entities;
 
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Rectangle;
 
 public abstract class Entity {
@@ -13,12 +13,15 @@ public abstract class Entity {
     protected final float width;
     protected final float height;
 
+    protected float spawnX;
+    protected float spawnY;
+
     public Entity(Sprite startingSprite, EntityDirection startingDirection) {
         this.entitySprite = startingSprite;
         this.direction = startingDirection;
 
-        width = entitySprite.getWidth();
-        height = entitySprite.getHeight();
+        this.width = entitySprite.getWidth();
+        this.height = entitySprite.getHeight();
     }
 
     public void setPosition(float x, float y) {
@@ -31,7 +34,24 @@ public abstract class Entity {
         hitbox.setPosition(entitySprite.getX() + hitboxOffsetX, entitySprite.getY());
     }
 
+    protected static Sprite createInitialSprite(TextureAtlas atlas, String region, float width, float height) {
+        Animation<TextureRegion> initialAnimation = new Animation<>(
+            0.1f,
+            atlas.findRegions(region)
+        );
+
+        TextureRegion firstFrame = initialAnimation.getKeyFrame(0);
+        Sprite initialSprite = new Sprite(firstFrame);
+
+        initialSprite.setSize(width, height);
+
+        return initialSprite;
+    }
+
     public abstract void changeDirection(EntityDirection newDirection);
+
+    public abstract void update(float delta);
+    public abstract void draw(SpriteBatch batch);
 
     public EntityDirection getCurrentDirection() { return direction; }
     public Sprite getSprite() { return entitySprite; }

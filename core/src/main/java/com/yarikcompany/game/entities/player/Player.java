@@ -27,9 +27,6 @@ public class Player extends Entity {
     private float centerX;
     private float centerY;
 
-    private float spawnX;
-    private float spawnY;
-
     private boolean isMovingUp = false;
     private boolean isMovingDown = false;
     private boolean isMovingLeft = false;
@@ -47,7 +44,7 @@ public class Player extends Entity {
     private Vector2 velocity = new Vector2(0, 0);
 
     public Player(TextureAtlas atlas) {
-        super(createInitialSprite(atlas), EntityDirection.DOWN);
+        super(createInitialSprite(atlas, "down", PLAYER_WIDTH, PLAYER_HEIGHT), EntityDirection.DOWN);
 
         initializeSpawnCords();
 
@@ -69,20 +66,6 @@ public class Player extends Entity {
 
         spawnX = playerObject.getProperties().get("x", Float.class) / PPM;
         spawnY = playerObject.getProperties().get("y", Float.class) / PPM;
-    }
-
-    private static Sprite createInitialSprite(TextureAtlas atlas) {
-        Animation<TextureRegion> initialAnimation = new Animation<>(
-            0.1f,
-            atlas.findRegions("down")
-        );
-
-        TextureRegion firstFrame = initialAnimation.getKeyFrame(0);
-        Sprite initialSprite = new Sprite(firstFrame);
-
-        initialSprite.setSize(PLAYER_WIDTH, PLAYER_HEIGHT);
-
-        return initialSprite;
     }
 
     @Override
@@ -181,7 +164,7 @@ public class Player extends Entity {
         return true;
     }
 
-    public void draw(Batch batch) {
+    public void draw(SpriteBatch batch) {
         TextureRegion currentFrame = currentAnimation.getKeyFrame(stateTime, true);
 
         batch.draw(currentFrame,

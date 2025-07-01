@@ -12,6 +12,12 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.sun.org.apache.xpath.internal.operations.Or;
+import com.yarikcompany.game.entities.Entity;
+import com.yarikcompany.game.entities.EntityFactory;
+import com.yarikcompany.game.entities.slime.Slime;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Map {
     public static final float PPM = 16f;
@@ -25,6 +31,7 @@ public class Map {
     private static ExtendViewport viewport;
 
     private static MapLayers layers;
+    private static EntityFactory entityFactory;
 
     private static int mapWidth;
     private static int mapHeight;
@@ -44,11 +51,23 @@ public class Map {
         mapHeight = map.getProperties().get("height", Integer.class);
 
         layers = map.getLayers();
+        entityFactory = new EntityFactory(assetManager);
     }
 
-    public static MapObject getEntity(String entityName) {
-        MapLayer layer = layers.get("Entities");
-        return layer.getObjects().get(entityName);
+    public void spawnMobs(List<Entity> mobList) {
+        MapLayer mobLayer = map.getLayers().get("Entities");
+        if (mobLayer == null) return;
+
+        for (MapObject object : mobLayer.getObjects()) {
+            String type = object.getProperties().get("type", String.class);
+            float x = object.getProperties().get("x", Float.class);
+            float y = object.getProperties().get("y", Float.class);
+
+            if ("slime".equals(type)) {
+                Slime slime = entityFactory.createSlime(x, y);
+                mobList.add(slime);
+            }
+        }
     }
 
     public static boolean isCellBLocked(int tileX, int tileY) {
@@ -67,8 +86,12 @@ public class Map {
     }
 
     public void dispose() {
-        map.dispose();
         renderer.dispose();
+    }
+
+    public static MapObject getEntity(String entityName) {
+        MapLayer layer = layers.get("Entities");
+        return layer.getObjects().get(entityName);
     }
 
     public static int getMapWidth() { return mapWidth; }

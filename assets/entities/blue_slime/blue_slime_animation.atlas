@@ -1,0 +1,15 @@
+blue_slime_animation.png
+size:128,32
+repeat:none
+slime
+index:3
+bounds:2,2,16,16
+slime
+index:0
+bounds:20,2,16,16
+slime
+index:2
+bounds:38,2,16,16
+slime
+index:1
+bounds:56,2,16,16

@@ -11,12 +11,16 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.PooledLinkedList;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.yarikcompany.game.entities.Entity;
 import com.yarikcompany.game.entities.player.Player;
 import com.yarikcompany.game.entities.EntityFactory;
 import com.yarikcompany.game.entities.player.PlayerInputHandler;
 import com.yarikcompany.game.ui.PlayerToolBar;
 import com.yarikcompany.game.utils.Interpolator;
 import jdk.internal.net.http.common.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameScreen implements Screen {
     public final static int MIN_WINDOW_WIDTH = 800;
@@ -28,6 +32,8 @@ public class GameScreen implements Screen {
 
     private EntityFactory entityFactory;
     private Player player;
+    private List<Entity> mobList = new ArrayList<>();
+
     private PlayerInputHandler playerInputHandler;
     private PlayerToolBar playerToolBar;
     private SpriteBatch batch;
@@ -54,6 +60,7 @@ public class GameScreen implements Screen {
     private void initializeEntities() {
         this.entityFactory = new EntityFactory(game.assetManager);
         this.player = entityFactory.createPlayer();
+        map.spawnMobs(mobList);
     }
 
     @Override
@@ -74,7 +81,10 @@ public class GameScreen implements Screen {
         float delta = Gdx.graphics.getDeltaTime();
 
         player.update(delta);
+
         cameraInterpolator.step(delta);
+        for (Entity mob : mobList) { mob.update(delta); }
+
         playerToolBar.update();
     }
 
@@ -93,6 +103,7 @@ public class GameScreen implements Screen {
         batch.begin();
 
         player.draw(batch);
+        for (Entity mob : mobList) { mob.draw(batch); }
 
         batch.end();
 

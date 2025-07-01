@@ -7,18 +7,21 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.PooledLinkedList;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.yarikcompany.game.entities.player.Player;
 import com.yarikcompany.game.entities.EntityFactory;
 import com.yarikcompany.game.entities.player.PlayerInputHandler;
+import com.yarikcompany.game.ui.PlayerToolBar;
 import com.yarikcompany.game.utils.Interpolator;
 import jdk.internal.net.http.common.Log;
 
 public class GameScreen implements Screen {
+    public final static int MIN_WINDOW_WIDTH = 800;
+    public final static int MIN_WINDOW_HEIGHT = 600;
+
     private Map map;
 
     private final LittleAdventure game;
@@ -26,7 +29,7 @@ public class GameScreen implements Screen {
     private EntityFactory entityFactory;
     private Player player;
     private PlayerInputHandler playerInputHandler;
-
+    private PlayerToolBar playerToolBar;
     private SpriteBatch batch;
 
     private Interpolator cameraInterpolator;
@@ -37,6 +40,7 @@ public class GameScreen implements Screen {
 
         initializeEntities();
 
+        playerToolBar = new PlayerToolBar(game.assetManager);
         playerInputHandler = new PlayerInputHandler(player);
         Gdx.input.setInputProcessor(playerInputHandler);
 
@@ -71,22 +75,17 @@ public class GameScreen implements Screen {
 
         player.update(delta);
         cameraInterpolator.step(delta);
+        playerToolBar.update();
     }
 
     private void draw() {
-        Sprite playerSprite = player.getSprite();
-
-        //move to own function
-        float playerCenterX = playerSprite.getX() + playerSprite.getWidth() / 2;
-        float playerCenterY = playerSprite.getY() + playerSprite.getHeight() / 2;
         map.getViewport().getCamera().position.set(cameraInterpolator.getInterpolatedValue().x,
             cameraInterpolator.getInterpolatedValue().y , 0);
-        cameraInterpolator.setTarget(new Vector2(playerCenterX,playerCenterY));
+        cameraInterpolator.setTarget(new Vector2(player.getCenterX(), player.getCenterY()));
 
         map.getViewport().getCamera().update();
         ScreenUtils.clear(Color.BLACK);
 
-        //do you need to set view every iteration?
         map.getRenderer().setView((OrthographicCamera) map.getViewport().getCamera());
         map.getRenderer().render();
 
@@ -96,11 +95,19 @@ public class GameScreen implements Screen {
         player.draw(batch);
 
         batch.end();
+
+        batch.setProjectionMatrix(PlayerToolBar.getViewport().getCamera().combined);
+        batch.begin();
+
+        playerToolBar.draw(batch);
+
+        batch.end();
     }
 
     @Override
     public void resize(int width, int height) {
         map.getViewport().update(width, height);
+        PlayerToolBar.getViewport().update(width, height, true);
     }
 
     @Override

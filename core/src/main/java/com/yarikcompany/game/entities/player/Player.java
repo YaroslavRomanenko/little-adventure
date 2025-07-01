@@ -24,6 +24,9 @@ public class Player extends Entity {
     private static final float PLAYER_HEIGHT = 1.16f;
     private static final float SPEED = 2.5f;
 
+    private float centerX;
+    private float centerY;
+
     private float spawnX;
     private float spawnY;
 
@@ -105,6 +108,9 @@ public class Player extends Entity {
     }
 
     public void update(float delta) {
+        centerX = getSprite().getX() + getSprite().getWidth() / 2;
+        centerY = getSprite().getY() + getSprite().getHeight() / 2;
+
         velocity.set(0, 0);
         EntityDirection newDirection = EntityDirection.NONE;
 
@@ -188,6 +194,8 @@ public class Player extends Entity {
 
     public float getSpawnX() { return spawnX; }
     public float getSpawnY() { return spawnY; }
+    public float getCenterX() { return centerX; }
+    public float getCenterY() { return centerY; }
     public Rectangle getHitbox() { return hitbox; }
 
     public void setIsMovingUp(boolean isMovingUp) { this.isMovingUp = isMovingUp; }

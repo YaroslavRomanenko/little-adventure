@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Rectangle;
@@ -13,11 +14,11 @@ import com.yarikcompany.game.GameScreen;
 import com.yarikcompany.game.Map;
 import com.yarikcompany.game.entities.Entity;
 import com.yarikcompany.game.entities.EntityDirection;
+import com.yarikcompany.game.math.CollisionDetection;
 
 import java.lang.Record;
 
-import static com.yarikcompany.game.Map.PPM;
-import static com.yarikcompany.game.Map.getEntity;
+import static com.yarikcompany.game.Map.*;
 
 public class Player extends Entity {
     private static final float PLAYER_WIDTH = 1f;
@@ -57,7 +58,7 @@ public class Player extends Entity {
 
         this.currentAnimation = walkDownAnimation;
 
-        this.hitbox = new Rectangle(getSprite().getX(), getSprite().getY(), getSprite().getWidth(), getSprite().getHeight());
+        initializeHitbox();
         setPosition(spawnX, spawnY);
     }
 
@@ -66,6 +67,15 @@ public class Player extends Entity {
 
         spawnX = playerObject.getProperties().get("x", Float.class) / PPM;
         spawnY = playerObject.getProperties().get("y", Float.class) / PPM;
+    }
+
+    private void initializeHitbox() {
+        float hitboxX = sprite.getX();
+        float hitboxY = sprite.getY();
+        float hitboxWidth = sprite.getWidth() * .7f;
+        float hitboxHeight = sprite.getHeight() * .45f;
+
+        this.hitbox = new Rectangle(hitboxX, hitboxY, hitboxWidth, hitboxHeight);
     }
 
     @Override
@@ -97,69 +107,117 @@ public class Player extends Entity {
         velocity.set(0, 0);
         EntityDirection newDirection = EntityDirection.NONE;
 
-        if (isMovingUp) {
-            velocity.y = 1;
-            newDirection = EntityDirection.UP;
-        }
-        if (isMovingDown) {
-            velocity.y = -1;
-            newDirection = EntityDirection.DOWN;
-        }
-        if (isMovingLeft) {
-            velocity.x = -1;
-            newDirection = EntityDirection.LEFT;
-        }
-        if (isMovingRight) {
-            velocity.x = 1;
-            newDirection = EntityDirection.RIGHT;
-        }
+        if (isMovingUp) { velocity.y = 1; newDirection = EntityDirection.UP; }
+        if (isMovingDown) { velocity.y = -1; newDirection = EntityDirection.DOWN; }
+        if (isMovingLeft) { velocity.x = -1; newDirection = EntityDirection.LEFT; }
+        if (isMovingRight) { velocity.x = 1; newDirection = EntityDirection.RIGHT; }
 
         if (velocity.len2() > 0) {
             stateTime += delta;
-        } else if (direction != EntityDirection.NONE) {
-            changeDirection(EntityDirection.NONE);
-            stateTime = 0;
-        }
-
-        if (velocity.len2() > 0) {
             velocity.nor();
-
-            float moveX = velocity.x * SPEED * delta;
-
-            if (isMoveValid(entitySprite.getX() + moveX, entitySprite.getY())) {
-                entitySprite.translateX(moveX);
+        } else {
+            if (direction != EntityDirection.NONE) {
+                stateTime = 0;
             }
+            changeDirection(EntityDirection.NONE);
+            return;
+        }
 
-            float moveY = velocity.y * SPEED * delta;
+        float desiredMoveX = velocity.x * SPEED * delta;
+        float finalMoveX = desiredMoveX;
 
-            if (isMoveValid(entitySprite.getX(), entitySprite.getY() + moveY)) {
-                entitySprite.translateY(moveY);
+        if (desiredMoveX != 0) {
+            float leadingEdgeX = (desiredMoveX > 0) ? hitbox.x + hitbox.width : hitbox.x;
+
+            int targetTileX = (int)(leadingEdgeX + desiredMoveX);
+
+            for (int i = 0; i < 3; i++) {
+                float yPos = hitbox.y + (i * hitbox.height / 2.0f);
+                int tileY = (int)yPos;
+
+                if (Map.isCellBLocked(targetTileX, tileY)) {
+                    if (desiredMoveX > 0) {
+                        finalMoveX = (float)targetTileX - leadingEdgeX;
+                    } else {
+                        finalMoveX = (float)(targetTileX + 1) - leadingEdgeX;
+                    }
+
+                    break;
+                }
             }
         }
+
+        sprite.translateX(finalMoveX);
+        updateHitboxPos();
+
+        float desiredMoveY = velocity.y * SPEED * delta;
+        float finalMoveY = desiredMoveY;
+
+        if (desiredMoveY != 0) {
+            float leadingEdgeY = (desiredMoveY > 0) ? hitbox.y + hitbox.height : hitbox.y;;
+
+            int targetTileY = (int)(leadingEdgeY + desiredMoveY);
+
+            for (int i = 0; i < 3; i++) {
+                float xPos = hitbox.x + (i * hitbox.width / 2.0f);
+                int tileX = (int)xPos;
+
+                if (Map.isCellBLocked(tileX, targetTileY)) {
+                    if (desiredMoveY > 0) {
+                        finalMoveY = (float)targetTileY - leadingEdgeY;
+                    } else {
+                        finalMoveY = (float)(targetTileY + 1) - leadingEdgeY;
+                    }
+                    break;
+                }
+            }
+        }
+
+        sprite.translateY(finalMoveY);
+        updateHitboxPos();
 
         changeDirection(newDirection);
-        updateHitboxPos();
     }
 
     public boolean isMoveValid(float nextX, float nextY) {
-        float playerRealWidth = getHitbox().getWidth();
-        float playerRealHeight = getHitbox().getHeight();
+        int nearTileXRounded;
+        int nearTileYRounded;
 
-        if (nextX < 0) {
-            return false;
+        if (nextX + hitbox.width > hitbox.x + hitbox.width) {
+            nearTileXRounded = Math.round(hitbox.x + 1);
+            if (Map.isCellBLocked(nearTileXRounded, (int)hitbox.y)) {
+                Rectangle tileHitbox = new Rectangle(hitbox.x + 1, hitbox.y, TILE_WIDTH, TILE_HEIGHT);
+
+                return CollisionDetection.isCollisionFound(hitbox, tileHitbox);
+            }
         }
 
-        if (nextX + playerRealWidth > Map.getMapWidth()) {
-            return false;
-        }
-
-        if (nextY < 0) {
-            return false;
-        }
-
-        if (nextY + playerRealHeight > Map.getMapHeight()) {
-            return false;
-        }
+//        if (nextX < hitbox.x) {
+//            nearTileX = hitbox.x - 1;
+//            if (Map.isCellBLocked((int)nearTileX, (int)hitbox.y)) {
+//                Rectangle tileHitbox = new Rectangle(nearTileX, hitbox.y, TILE_WIDTH, TILE_HEIGHT);
+//
+//                return CollisionDetection.isCollisionFound(hitbox, tileHitbox);
+//            }
+//        }
+//
+//        if (nextY + hitbox.height > hitbox.y + hitbox.height) {
+//            nearTileY = hitbox.y + 1;
+//            if (Map.isCellBLocked((int)hitbox.x, (int)nearTileY)) {
+//                Rectangle tileHitbox = new Rectangle(hitbox.x, nearTileY, TILE_WIDTH, TILE_HEIGHT);
+//
+//                return CollisionDetection.isCollisionFound(hitbox, tileHitbox);
+//            }
+//        }
+//
+//        if (nextY < hitbox.y) {
+//            nearTileY = hitbox.y - 1;
+//            if (Map.isCellBLocked((int)hitbox.x, (int)nearTileY)) {
+//                Rectangle tileHitbox = new Rectangle(hitbox.x, nearTileY, TILE_WIDTH, TILE_HEIGHT);
+//
+//                return CollisionDetection.isCollisionFound(hitbox, tileHitbox);
+//            }
+//        }
 
         return true;
     }
@@ -173,6 +231,18 @@ public class Player extends Entity {
             getSprite().getWidth(),
             getSprite().getHeight()
         );
+    }
+
+    public void drawHitbox(ShapeRenderer renderer) {
+        renderer.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
+
+        int tileX = Math.round(hitbox.x);
+        int tileY = Math.round(hitbox.y);
+
+        renderer.rect(tileX + 1, tileY, 1, 1);
+        renderer.rect(tileX - 1, tileY, 1, 1);
+        renderer.rect(tileX, tileY + 1, 1, 1);
+        renderer.rect(tileX, tileY - 1, 1, 1);
     }
 
     public float getSpawnX() { return spawnX; }

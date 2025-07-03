@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Rectangle;
 
 public abstract class Entity {
     protected EntityDirection direction;
-    protected Sprite entitySprite;
+    protected Sprite sprite;
     protected Rectangle hitbox;
 
     protected final float width;
@@ -17,21 +17,21 @@ public abstract class Entity {
     protected float spawnY;
 
     public Entity(Sprite startingSprite, EntityDirection startingDirection) {
-        this.entitySprite = startingSprite;
+        this.sprite = startingSprite;
         this.direction = startingDirection;
 
-        this.width = entitySprite.getWidth();
-        this.height = entitySprite.getHeight();
+        this.width = sprite.getWidth();
+        this.height = sprite.getHeight();
     }
 
     public void setPosition(float x, float y) {
-        entitySprite.setPosition(x, y);
+        sprite.setPosition(x, y);
         updateHitboxPos();
     }
 
     protected void updateHitboxPos() {
-        float hitboxOffsetX = (entitySprite.getWidth() - hitbox.width) / 2.0f;
-        hitbox.setPosition(entitySprite.getX() + hitboxOffsetX, entitySprite.getY());
+        float hitboxOffsetX = (sprite.getWidth() - hitbox.width) / 2.0f;
+        hitbox.setPosition(sprite.getX() + hitboxOffsetX, sprite.getY());
     }
 
     protected static Sprite createInitialSprite(TextureAtlas atlas, String region, float width, float height) {
@@ -54,7 +54,7 @@ public abstract class Entity {
     public abstract void draw(SpriteBatch batch);
 
     public EntityDirection getCurrentDirection() { return direction; }
-    public Sprite getSprite() { return entitySprite; }
+    public Sprite getSprite() { return sprite; }
     public float getWidth() { return width; }
     public float getHeight() { return height; }
 

@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.PooledLinkedList;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -19,6 +21,7 @@ import com.yarikcompany.game.ui.PlayerToolBar;
 import com.yarikcompany.game.utils.Interpolator;
 import jdk.internal.net.http.common.Log;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +40,7 @@ public class GameScreen implements Screen {
     private PlayerInputHandler playerInputHandler;
     private PlayerToolBar playerToolBar;
     private SpriteBatch batch;
+    private ShapeRenderer shapeRenderer;
 
     private Interpolator cameraInterpolator;
 
@@ -53,6 +57,7 @@ public class GameScreen implements Screen {
         cameraInterpolator = new Interpolator(new Vector2(player.getSpawnX(), player.getSpawnY()), 1.4f,1.0f,0.0f);
 
         this.batch = new SpriteBatch();
+        this.shapeRenderer = new ShapeRenderer();
 
         Gdx.app.setLogLevel(Log.ALL);
     }
@@ -113,6 +118,14 @@ public class GameScreen implements Screen {
         playerToolBar.draw(batch);
 
         batch.end();
+
+        shapeRenderer.setProjectionMatrix(map.getViewport().getCamera().combined);
+        shapeRenderer.setColor(Color.RED);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+        player.drawHitbox(shapeRenderer);
+
+        shapeRenderer.end();
     }
 
     @Override

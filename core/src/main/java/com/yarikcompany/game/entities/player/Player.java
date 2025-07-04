@@ -24,6 +24,7 @@ public class Player extends Entity {
     private static final float PLAYER_WIDTH = 1f;
     private static final float PLAYER_HEIGHT = 1.16f;
     private static final float SPEED = 2.5f;
+    private static final float EPSILON = 0.001f;
 
     private float centerX;
     private float centerY;
@@ -124,102 +125,74 @@ public class Player extends Entity {
         }
 
         float desiredMoveX = velocity.x * SPEED * delta;
-        float finalMoveX = desiredMoveX;
-
-        if (desiredMoveX != 0) {
-            float leadingEdgeX = (desiredMoveX > 0) ? hitbox.x + hitbox.width : hitbox.x;
-
-            int targetTileX = (int)(leadingEdgeX + desiredMoveX);
-
-            for (int i = 0; i < 3; i++) {
-                float yPos = hitbox.y + (i * hitbox.height / 2.0f);
-                int tileY = (int)yPos;
-
-                if (Map.isCellBLocked(targetTileX, tileY)) {
-                    if (desiredMoveX > 0) {
-                        finalMoveX = (float)targetTileX - leadingEdgeX;
-                    } else {
-                        finalMoveX = (float)(targetTileX + 1) - leadingEdgeX;
-                    }
-
-                    break;
-                }
-            }
-        }
-
+        float finalMoveX = calculateAllowedMoveX(desiredMoveX);
         sprite.translateX(finalMoveX);
         updateHitboxPos();
 
         float desiredMoveY = velocity.y * SPEED * delta;
-        float finalMoveY = desiredMoveY;
-
-        if (desiredMoveY != 0) {
-            float leadingEdgeY = (desiredMoveY > 0) ? hitbox.y + hitbox.height : hitbox.y;;
-
-            int targetTileY = (int)(leadingEdgeY + desiredMoveY);
-
-            for (int i = 0; i < 3; i++) {
-                float xPos = hitbox.x + (i * hitbox.width / 2.0f);
-                int tileX = (int)xPos;
-
-                if (Map.isCellBLocked(tileX, targetTileY)) {
-                    if (desiredMoveY > 0) {
-                        finalMoveY = (float)targetTileY - leadingEdgeY;
-                    } else {
-                        finalMoveY = (float)(targetTileY + 1) - leadingEdgeY;
-                    }
-                    break;
-                }
-            }
-        }
-
+        float finalMoveY = calculateAllowedMoveY(desiredMoveY);
         sprite.translateY(finalMoveY);
         updateHitboxPos();
 
         changeDirection(newDirection);
     }
 
-    public boolean isMoveValid(float nextX, float nextY) {
-        int nearTileXRounded;
-        int nearTileYRounded;
+    private float calculateAllowedMoveX(float desiredMoveX) {
+        if (desiredMoveX == 0) return 0;
 
-        if (nextX + hitbox.width > hitbox.x + hitbox.width) {
-            nearTileXRounded = Math.round(hitbox.x + 1);
-            if (Map.isCellBLocked(nearTileXRounded, (int)hitbox.y)) {
-                Rectangle tileHitbox = new Rectangle(hitbox.x + 1, hitbox.y, TILE_WIDTH, TILE_HEIGHT);
+        float finalMoveX = desiredMoveX;
 
-                return CollisionDetection.isCollisionFound(hitbox, tileHitbox);
+        float leadingEdgeX = (desiredMoveX > 0) ? hitbox.x + hitbox.width : hitbox.x;
+        int targetTileX = (int)(leadingEdgeX + desiredMoveX);
+
+        for (int i = 0; i < 3; i++) {
+            float yPos = hitbox.y + (i * hitbox.height / 2.0f);
+
+            if (i == 2) {
+                yPos -= EPSILON;
+            }
+
+            int tileY = (int)yPos;
+
+            if (Map.isCellBLocked(targetTileX, tileY)) {
+                if (desiredMoveX > 0) {
+                    finalMoveX = (float)targetTileX - leadingEdgeX;
+                } else {
+                    finalMoveX = (float)(targetTileX + 1) - leadingEdgeX;
+                }
+                break;
             }
         }
+        return finalMoveX;
+    }
 
-//        if (nextX < hitbox.x) {
-//            nearTileX = hitbox.x - 1;
-//            if (Map.isCellBLocked((int)nearTileX, (int)hitbox.y)) {
-//                Rectangle tileHitbox = new Rectangle(nearTileX, hitbox.y, TILE_WIDTH, TILE_HEIGHT);
-//
-//                return CollisionDetection.isCollisionFound(hitbox, tileHitbox);
-//            }
-//        }
-//
-//        if (nextY + hitbox.height > hitbox.y + hitbox.height) {
-//            nearTileY = hitbox.y + 1;
-//            if (Map.isCellBLocked((int)hitbox.x, (int)nearTileY)) {
-//                Rectangle tileHitbox = new Rectangle(hitbox.x, nearTileY, TILE_WIDTH, TILE_HEIGHT);
-//
-//                return CollisionDetection.isCollisionFound(hitbox, tileHitbox);
-//            }
-//        }
-//
-//        if (nextY < hitbox.y) {
-//            nearTileY = hitbox.y - 1;
-//            if (Map.isCellBLocked((int)hitbox.x, (int)nearTileY)) {
-//                Rectangle tileHitbox = new Rectangle(hitbox.x, nearTileY, TILE_WIDTH, TILE_HEIGHT);
-//
-//                return CollisionDetection.isCollisionFound(hitbox, tileHitbox);
-//            }
-//        }
+    private float calculateAllowedMoveY(float desiredMoveY) {
+        if (desiredMoveY == 0) return 0;
 
-        return true;
+        float finalMoveY = desiredMoveY;
+
+        float leadingEdgeY = (desiredMoveY > 0) ? hitbox.y + hitbox.height : hitbox.y;
+        int targetTileY = (int)(leadingEdgeY + desiredMoveY);
+
+        for (int i = 0; i < 3; i++) {
+            float xPos = hitbox.x + (i * hitbox.width / 2.0f);
+
+            if (i == 2) {
+                xPos -= EPSILON;
+            }
+
+            int tileX = (int)xPos;
+
+            if (Map.isCellBLocked(tileX, targetTileY)) {
+                if (desiredMoveY > 0) {
+                    finalMoveY = (float)targetTileY - leadingEdgeY;
+                } else {
+                    finalMoveY = (float)(targetTileY + 1) - leadingEdgeY;
+                }
+                break;
+            }
+        }
+        return finalMoveY;
     }
 
     public void draw(SpriteBatch batch) {

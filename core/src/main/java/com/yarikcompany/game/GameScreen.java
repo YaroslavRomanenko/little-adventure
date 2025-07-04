@@ -119,13 +119,13 @@ public class GameScreen implements Screen {
 
         batch.end();
 
-        shapeRenderer.setProjectionMatrix(map.getViewport().getCamera().combined);
-        shapeRenderer.setColor(Color.RED);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
-        player.drawHitbox(shapeRenderer);
-
-        shapeRenderer.end();
+//        shapeRenderer.setProjectionMatrix(map.getViewport().getCamera().combined);
+//        shapeRenderer.setColor(Color.RED);
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+//
+//        player.drawHitbox(shapeRenderer);
+//
+//        shapeRenderer.end();
     }
 
     @Override
